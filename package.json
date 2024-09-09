@@ -1,0 +1,31 @@
+{
+  "name": "eth-utils",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "dist/index.js",
+  "bin": {
+    "cli": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "author": "ken01.dev@gmail.com",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.5.4",
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "ethers": "^6.13.2",
+    "inquirer": "^10.2.2"
+  }
+}
