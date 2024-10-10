@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { createMnemonic } from './ethers/wallet.js';
 import { displayWalletInfo } from './lib/chalk.js';
+import inquirer from 'inquirer';
+import dotenv from 'dotenv';
+import { getWalletList, createMnemonic } from './ethers/wallet.js';
+
+// .env 파일을 로드합니다.
+dotenv.config();
 
 // Commander를 사용해 CLI 명령어를 구성합니다.
 const program = new Command();
@@ -14,26 +19,78 @@ program
   .version('1.0.0');
 
 // 랜덤 니모닉 생성 명령어
-program
-  .command('mnemonic')
-  .description('Create a random mnemonic')
-  .alias('m')
-  .action(() => {
+const mnemonicCommand = {
+  name: 'Create a random mnemonic',
+  action: () => {
     const mnemonic = createMnemonic();
     if (!mnemonic) {
       return;
     }
     displayWalletInfo(mnemonic);
-  });
+  },
+};
 
-// sum 명령어 추가
-program
-  .command('sum <numbers...>')
-  .description('Sum the provided numbers')
-  .action((numbers: string[]) => {
-    const result = numbers.map(Number).reduce((a, b) => a + b, 0);
-    console.log(`The sum is: ${result}`);
-  });
+// walletlist 명령어
+const walletListCommand = {
+  name: 'Get a list of wallet addresses from environment variables',
+  action: () => {
+    const addresses: string[] = getWalletList();
+    
+    console.log('Wallets :');
+    addresses.forEach((address, index) => {
+      console.log(`${index + 1}: ${address}`);
+    });
+  },
+};
+
+const deployContractCommand = {
+  name: 'Deploy an OpenZeppelin test contract',
+  action: async() => {
+    const { choice } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'choice',
+        message: 'Select a wallet to deploy the contract',
+        choices: getWalletList().map((address, index) => ({
+          name: `${index + 1}: ${address}`,
+          value: index,
+        })),
+      }
+    ])
+
+    console.log('choice:', choice);
+  }
+}
+
+
+
+// 명령어 목록 배열
+const commands = [
+  mnemonicCommand,
+  walletListCommand,
+  deployContractCommand
+];
 
 // 명령어 파싱 및 실행
-program.parse(process.argv);
+// 대화형 메뉴 함수
+async function interactiveMenu() {
+  console.log('command: ', commands)
+  const answer = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'command',
+      message: 'Select a command to execute:',
+      choices: commands.map((cmd, index) => ({
+        name: `${index + 1}. ${cmd.name}`,
+        value: index,
+      })),
+    },
+  ]);
+
+  const selectedCommand = commands[answer.command];
+  console.log('command: ', commands)
+  selectedCommand.action();
+}
+console.log('command: ', commands)
+// 프로그램 시작
+interactiveMenu();
